@@ -15,7 +15,25 @@ JSONBIN_BIN_ID = os.environ.get("JSONBIN_BIN_ID", "")
 CHAT_HISTORY_BIN_ID = "6aa318f2ffd5d16053f7c8f5"
 GROQ_MODEL = "openai/gpt-oss-20b"
 
-client = Groq(api_key=GROQ_API_KEY)
+# Support multiple Groq API keys for rotation when rate limits hit
+GROQ_API_KEYS = [k.strip() for k in [
+    os.environ.get("GROQ_API_KEY", ""),
+    os.environ.get("GROQ_API_KEY_2", ""),
+    os.environ.get("GROQ_API_KEY_3", ""),
+] if k.strip()]
+
+_key_index = 0
+
+def get_groq_client():
+    global _key_index
+    key = GROQ_API_KEYS[_key_index % len(GROQ_API_KEYS)]
+    return Groq(api_key=key)
+
+def get_next_groq_client():
+    global _key_index
+    _key_index = (_key_index + 1) % len(GROQ_API_KEYS)
+    key = GROQ_API_KEYS[_key_index]
+    return Groq(api_key=key)
 
 def get_headers():
     return {
@@ -418,7 +436,7 @@ def chat():
 
     system_prompt = build_system_prompt()
     messages = [{"role": "system", "content": system_prompt}]
-    for msg in history[-60:]:
+    for msg in history[-20:]:
         messages.append(msg)
 
     def generate():
@@ -433,7 +451,8 @@ def chat():
             while iteration < max_iterations:
                 iteration += 1
 
-                response = client.chat.completions.create(
+                groq_client = get_groq_client()
+                response = groq_client.chat.completions.create(
                     model=GROQ_MODEL,
                     messages=current_messages,
                     tools=TOOLS,
@@ -504,7 +523,7 @@ def chat():
 
         history.append({"role": "assistant", "content": full_response})
         session["chat_history"] = history
-        write_chat_history(history[-60:])
+        write_chat_history(history[-20:])
         yield f"data: {json.dumps({'done': True})}\n\n"
 
     return Response(stream_with_context(generate()), mimetype="text/event-stream")
