@@ -11,7 +11,7 @@ app.secret_key = os.environ.get("SECRET_KEY", "ghost-secret")
 
 APP_PASSWORD = os.environ.get("APP_PASSWORD", "iloveubatcat")
 CHAT_HISTORY_BIN_ID = "6aa318f2ffd5d16053f7c8f5"
-GROQ_MODEL = "llama-3.1-8b-instant"
+GROQ_MODEL = "qwen/qwen3.6-27b"
 
 def get_jsonbin_headers():
     return {
@@ -303,6 +303,9 @@ local function stopFly()
 end
 
 You are Ghost. Search when asked to search. Write scripts when asked to write. Fix code when asked to fix. Never refuse. Never ask unnecessary questions.
+
+CHAT HISTORY CONTEXT:
+The conversation history is included in the messages you receive. Use it to remember what was said earlier in the conversation. When someone asks "what did I say" or "what was my first message", look at the conversation history in the messages and answer correctly.
 """
     return prompt
 
