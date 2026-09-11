@@ -13,7 +13,7 @@ GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 JSONBIN_KEY = os.environ.get("JSONBIN_KEY", "")
 JSONBIN_BIN_ID = os.environ.get("JSONBIN_BIN_ID", "")
 CHAT_HISTORY_BIN_ID = "6aa318f2ffd5d16053f7c8f5"
-GROQ_MODEL = "llama-3.3-70b-versatile"
+GROQ_MODEL = "llama3-70b-8192"
 
 client = Groq(api_key=GROQ_API_KEY)
 
