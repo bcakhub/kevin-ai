@@ -11,7 +11,7 @@ app.secret_key = os.environ.get("SECRET_KEY", "ghost-secret")
 
 APP_PASSWORD = os.environ.get("APP_PASSWORD", "iloveubatcat")
 CHAT_HISTORY_BIN_ID = "6aa318f2ffd5d16053f7c8f5"
-GROQ_MODEL = "openai/gpt-oss-20b"
+GROQ_MODEL = "llama-3.1-8b-instant"
 
 def get_jsonbin_headers():
     return {
@@ -370,7 +370,9 @@ def chat():
     if not user_message.strip():
         return jsonify({"error": "Empty message"}), 400
 
-    history = session.get("chat_history", [])
+    # Always read fresh from JSONbin so history persists across server restarts
+    history = read_chat_history()
+    session["chat_history"] = history
     history.append({"role": "user", "content": user_message})
 
     system_prompt = build_system_prompt()
