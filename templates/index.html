@@ -8,192 +8,42 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: #000;
-    color: #00ffff;
-    font-family: 'Courier New', Courier, monospace;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-  #header {
-    padding: 12px 20px;
-    border-bottom: 1px solid #00ffff33;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
-  }
-  #header h1 {
-    font-size: 1.2rem;
-    color: #00ffff;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-  }
-  #header h1 span {
-    display: inline-block;
-    width: 10px;
-    height: 1.2rem;
-    background: #00ffff;
-    margin-left: 4px;
-    animation: blink 1s step-end infinite;
-    vertical-align: middle;
-  }
+  body { background: #000; color: #00ffff; font-family: 'Courier New', Courier, monospace; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+  #header { padding: 12px 20px; border-bottom: 1px solid #00ffff33; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  #header h1 { font-size: 1.2rem; color: #00ffff; letter-spacing: 4px; text-transform: uppercase; }
+  #header h1 span { display: inline-block; width: 10px; height: 1.2rem; background: #00ffff; margin-left: 4px; animation: blink 1s step-end infinite; vertical-align: middle; }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-  #header-links a {
-    color: #00ffff88;
-    text-decoration: none;
-    font-size: 0.75rem;
-    margin-left: 16px;
-    letter-spacing: 1px;
-  }
+  #header-links a { color: #00ffff88; text-decoration: none; font-size: 0.75rem; margin-left: 16px; letter-spacing: 1px; }
   #header-links a:hover { color: #00ffff; }
-  #chat-container {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
+  #chat-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
   #chat-container::-webkit-scrollbar { width: 4px; }
   #chat-container::-webkit-scrollbar-track { background: #000; }
   #chat-container::-webkit-scrollbar-thumb { background: #00ffff44; border-radius: 2px; }
-  .message {
-    max-width: 85%;
-    line-height: 1.6;
-    font-size: 0.9rem;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-  .message.user {
-    align-self: flex-end;
-    color: #00ffff;
-    border-left: 2px solid #00ffff;
-    padding-left: 10px;
-  }
-  .message.assistant {
-    align-self: flex-start;
-    color: #aaffff;
-    border-left: 2px solid #00ffff44;
-    padding-left: 10px;
-  }
-  .message.system-msg {
-    align-self: center;
-    color: #00ffff44;
-    font-size: 0.75rem;
-    letter-spacing: 2px;
-  }
-  .code-block-wrapper {
-    position: relative;
-    margin: 8px 0;
-    border: 1px solid #00ffff33;
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  .code-block-wrapper .lang-label {
-    background: #00ffff11;
-    color: #00ffff88;
-    font-size: 0.7rem;
-    padding: 3px 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-  .code-block-wrapper .copy-btn {
-    position: absolute;
-    top: 4px;
-    right: 8px;
-    background: transparent;
-    border: 1px solid #00ffff44;
-    color: #00ffff88;
-    font-size: 0.7rem;
-    padding: 2px 8px;
-    cursor: pointer;
-    font-family: inherit;
-    letter-spacing: 1px;
-  }
+  .message { max-width: 85%; line-height: 1.6; font-size: 0.9rem; word-break: break-word; }
+  .message.user { align-self: flex-end; color: #00ffff; border-left: 2px solid #00ffff; padding-left: 10px; white-space: pre-wrap; }
+  .message.assistant { align-self: flex-start; color: #aaffff; border-left: 2px solid #00ffff44; padding-left: 10px; }
+  .message.system-msg { align-self: center; color: #00ffff44; font-size: 0.75rem; letter-spacing: 2px; }
+  .tool-indicator { align-self: flex-start; color: #00ffff66; font-size: 0.75rem; letter-spacing: 2px; padding-left: 12px; border-left: 2px solid #00ffff22; animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
+  .code-block-wrapper { position: relative; margin: 8px 0; border: 1px solid #00ffff33; border-radius: 4px; overflow: hidden; }
+  .code-block-wrapper .lang-label { background: #00ffff11; color: #00ffff88; font-size: 0.7rem; padding: 3px 10px; letter-spacing: 2px; text-transform: uppercase; }
+  .code-block-wrapper .copy-btn { position: absolute; top: 4px; right: 8px; background: transparent; border: 1px solid #00ffff44; color: #00ffff88; font-size: 0.7rem; padding: 2px 8px; cursor: pointer; font-family: inherit; letter-spacing: 1px; }
   .code-block-wrapper .copy-btn:hover { color: #00ffff; border-color: #00ffff; }
   .code-block-wrapper pre { margin: 0; }
   .code-block-wrapper code { font-size: 0.82rem; }
-  #input-area {
-    border-top: 1px solid #00ffff33;
-    padding: 12px 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-shrink: 0;
-    background: #000;
-  }
-  #prompt-symbol {
-    color: #00ffff;
-    font-size: 1rem;
-    flex-shrink: 0;
-  }
-  #message-input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: #00ffff;
-    font-family: inherit;
-    font-size: 0.9rem;
-    resize: none;
-    height: 36px;
-    max-height: 120px;
-    overflow-y: auto;
-  }
+  #input-area { border-top: 1px solid #00ffff33; padding: 12px 20px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; background: #000; }
+  #prompt-symbol { color: #00ffff; font-size: 1rem; flex-shrink: 0; }
+  #message-input { flex: 1; background: transparent; border: none; outline: none; color: #00ffff; font-family: inherit; font-size: 0.9rem; resize: none; height: 36px; max-height: 120px; overflow-y: auto; }
   #message-input::placeholder { color: #00ffff44; }
-  #file-btn {
-    background: transparent;
-    border: 1px solid #00ffff33;
-    color: #00ffff88;
-    padding: 4px 10px;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 0.75rem;
-    letter-spacing: 1px;
-  }
+  #file-btn { background: transparent; border: 1px solid #00ffff33; color: #00ffff88; padding: 4px 10px; cursor: pointer; font-family: inherit; font-size: 0.75rem; letter-spacing: 1px; }
   #file-btn:hover { border-color: #00ffff; color: #00ffff; }
-  #send-btn {
-    background: transparent;
-    border: 1px solid #00ffff;
-    color: #00ffff;
-    padding: 6px 16px;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 0.85rem;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
+  #send-btn { background: transparent; border: 1px solid #00ffff; color: #00ffff; padding: 6px 16px; cursor: pointer; font-family: inherit; font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; }
   #send-btn:hover { background: #00ffff; color: #000; }
   #send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   #file-input { display: none; }
-  #file-indicator {
-    color: #00ffff66;
-    font-size: 0.75rem;
-    padding: 0 20px 8px;
-    display: none;
-  }
-  #thinking {
-    align-self: flex-start;
-    color: #00ffff44;
-    font-size: 0.8rem;
-    letter-spacing: 3px;
-    display: none;
-    animation: pulse 1.5s ease-in-out infinite;
-  }
-  @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
-  img.ai-image {
-    max-width: 300px;
-    border: 1px solid #00ffff33;
-    margin-top: 8px;
-    display: block;
-  }
-  @media (max-width: 600px) {
-    .message { max-width: 98%; }
-    #header h1 { font-size: 1rem; }
-  }
+  #file-indicator { color: #00ffff66; font-size: 0.75rem; padding: 0 20px 8px; display: none; }
+  img.ai-image { max-width: 300px; border: 1px solid #00ffff33; margin-top: 8px; display: block; }
+  @media (max-width: 600px) { .message { max-width: 98%; } #header h1 { font-size: 1rem; } }
 </style>
 </head>
 <body>
@@ -207,7 +57,7 @@
 <div id="chat-container">
   <div class="message system-msg">GHOST ONLINE -- READY</div>
 </div>
-<div id="file-indicator" id="file-indicator"></div>
+<div id="file-indicator"></div>
 <div id="input-area">
   <span id="prompt-symbol">&gt;</span>
   <textarea id="message-input" placeholder="type a message..." rows="1"></textarea>
@@ -224,7 +74,14 @@ const fileInput = document.getElementById("file-input");
 const fileIndicator = document.getElementById("file-indicator");
 let attachedFile = null;
 
-// Load history
+const TOOL_LABELS = {
+  "web_search": "searching the web...",
+  "read_webpage": "reading webpage...",
+  "read_github_file": "reading github file...",
+  "generate_image": "generating image...",
+  "read_memory_bin": "reading memory..."
+};
+
 window.addEventListener("load", async () => {
   try {
     const res = await fetch("/history");
@@ -247,10 +104,7 @@ fileInput.addEventListener("change", () => {
 });
 
 input.addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
-  }
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 });
 
 input.addEventListener("input", () => {
@@ -258,21 +112,26 @@ input.addEventListener("input", () => {
   input.style.height = Math.min(input.scrollHeight, 120) + "px";
 });
 
-function scrollToBottom() {
-  chatContainer.scrollTop = chatContainer.scrollHeight;
+function scrollToBottom() { chatContainer.scrollTop = chatContainer.scrollHeight; }
+
+function escapeHtml(text) {
+  return text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
 
 function formatMessage(text) {
-  const codeBlockRegex = /```(\w+)?\n?([\s\S]*?)```/g;
+  const codeBlockRegex = /```(\w+)?
+?([\s\S]*?)```/g;
   let html = "";
   let lastIndex = 0;
   let match;
   while ((match = codeBlockRegex.exec(text)) !== null) {
     const before = text.slice(lastIndex, match.index);
-    if (before) html += escapeHtml(before);
+    if (before) html += formatInline(before);
     const lang = match[1] || "plaintext";
     const code = match[2];
-    const highlighted = hljs.highlight(code, {language: lang, ignoreIllegals: true}).value;
+    let highlighted;
+    try { highlighted = hljs.highlight(code, {language: lang, ignoreIllegals: true}).value; }
+    catch(e) { highlighted = escapeHtml(code); }
     html += `<div class="code-block-wrapper">
       <div class="lang-label">${lang}</div>
       <button class="copy-btn" onclick="copyCode(this)">copy</button>
@@ -281,19 +140,14 @@ function formatMessage(text) {
     lastIndex = match.index + match[0].length;
   }
   const rest = text.slice(lastIndex);
-  // check for image
-  const imgMatch = rest.match(/\[Image generated\]: (https:\/\/image\.pollinations\.ai\/[^\s]+)/);
-  if (imgMatch) {
-    html += escapeHtml(rest.slice(0, imgMatch.index));
-    html += `<img class="ai-image" src="${imgMatch[1]}" alt="Generated image">`;
-  } else {
-    if (rest) html += escapeHtml(rest);
-  }
+  if (rest) html += formatInline(rest);
   return html;
 }
 
-function escapeHtml(text) {
-  return text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function formatInline(text) {
+  // Handle image URLs from generate_image tool
+  text = text.replace(/IMAGE_URL:(https:\/\/[^\s]+)/g, '<img class="ai-image" src="$1" alt="Generated image">');
+  return escapeHtml(text).replace(/\n/g, "<br>");
 }
 
 function copyCode(btn) {
@@ -320,6 +174,24 @@ function appendMessage(role, content, animate) {
   }
 }
 
+function showToolIndicator(toolName) {
+  // Remove any existing tool indicator
+  const existing = document.getElementById("tool-indicator");
+  if (existing) existing.remove();
+  const label = TOOL_LABELS[toolName] || (toolName + "...");
+  const div = document.createElement("div");
+  div.id = "tool-indicator";
+  div.className = "tool-indicator";
+  div.textContent = "> " + label;
+  chatContainer.appendChild(div);
+  scrollToBottom();
+}
+
+function removeToolIndicator() {
+  const existing = document.getElementById("tool-indicator");
+  if (existing) existing.remove();
+}
+
 async function sendMessage() {
   const text = input.value.trim();
   if (!text && !attachedFile) return;
@@ -340,10 +212,11 @@ async function sendMessage() {
     fileInput.value = "";
   }
 
+  // Thinking indicator
   const thinkingDiv = document.createElement("div");
-  thinkingDiv.id = "thinking";
-  thinkingDiv.textContent = "ghost is thinking...";
-  thinkingDiv.style.display = "block";
+  thinkingDiv.className = "tool-indicator";
+  thinkingDiv.id = "thinking-indicator";
+  thinkingDiv.textContent = "> ghost is thinking...";
   chatContainer.appendChild(thinkingDiv);
   scrollToBottom();
 
@@ -355,8 +228,7 @@ async function sendMessage() {
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
-
-    thinkingDiv.style.display = "none";
+    let thinkingRemoved = false;
 
     while (true) {
       const { done, value } = await reader.read();
@@ -368,12 +240,25 @@ async function sendMessage() {
         if (line.startsWith("data: ")) {
           try {
             const data = JSON.parse(line.slice(6));
+
+            if (data.tool_use) {
+              showToolIndicator(data.tool_use);
+            }
+
             if (data.token) {
+              if (!thinkingRemoved) {
+                const th = document.getElementById("thinking-indicator");
+                if (th) th.remove();
+                removeToolIndicator();
+                thinkingRemoved = true;
+              }
               fullText += data.token;
               msgDiv.innerHTML = formatMessage(fullText);
               scrollToBottom();
             }
+
             if (data.done) {
+              removeToolIndicator();
               try { document.getElementById("notify-sound").play(); } catch(e) {}
             }
           } catch(e) {}
@@ -381,7 +266,9 @@ async function sendMessage() {
       }
     }
   } catch(e) {
-    thinkingDiv.style.display = "none";
+    const th = document.getElementById("thinking-indicator");
+    if (th) th.remove();
+    removeToolIndicator();
     msgDiv.innerHTML = "Error: " + e.message;
   }
 
