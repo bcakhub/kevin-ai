@@ -195,7 +195,7 @@ local function addESP(player)
     end
 end
 
-AIMBOT PATTERN:
+AIMBOT PATTERN (correct - use Camera CFrame, never Mouse.Target):
 local function getClosest()
     local closest, dist = nil, math.huge
     for _, p in pairs(Players:GetPlayers()) do
@@ -206,13 +206,68 @@ local function getClosest()
                 local sp, vis = Camera:WorldToViewportPoint(hrp.Position)
                 if vis then
                     local d = (Vector2.new(sp.X,sp.Y) - Vector2.new(Mouse.X,Mouse.Y)).Magnitude
-                    if d < dist then dist = d; closest = p end
+                    if d < dist then dist = d; closest = hrp end
                 end
             end
         end
     end
     return closest
 end
+-- Aimbot runs in RenderStepped, NOT a while loop:
+RunService.RenderStepped:Connect(function()
+    if aimEnabled then
+        local hrp = getClosest()
+        if hrp then
+            Camera.CFrame = CFrame.new(Camera.CFrame.Position, hrp.Position)
+        end
+    end
+end)
+
+FLY PATTERN (correct - use BodyVelocity + BodyGyro, never CFrame manipulation):
+local flyBodyVelocity = nil
+local flyBodyGyro = nil
+local flyConnection = nil
+local function startFly()
+    Humanoid.PlatformStand = true
+    flyBodyVelocity = Instance.new("BodyVelocity")
+    flyBodyVelocity.Velocity = Vector3.zero
+    flyBodyVelocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+    flyBodyVelocity.Parent = RootPart
+    flyBodyGyro = Instance.new("BodyGyro")
+    flyBodyGyro.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
+    flyBodyGyro.D = 50
+    flyBodyGyro.Parent = RootPart
+    flyConnection = RunService.RenderStepped:Connect(function()
+        local cf = Camera.CFrame
+        local vel = Vector3.zero
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then vel = vel + cf.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then vel = vel - cf.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then vel = vel - cf.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then vel = vel + cf.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then vel = vel + Vector3.new(0,1,0) end
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then vel = vel - Vector3.new(0,1,0) end
+        flyBodyVelocity.Velocity = vel * flySpeed
+        flyBodyGyro.CFrame = cf
+    end)
+end
+local function stopFly()
+    Humanoid.PlatformStand = false
+    if flyConnection then flyConnection:Disconnect(); flyConnection = nil end
+    if flyBodyVelocity then flyBodyVelocity:Destroy(); flyBodyVelocity = nil end
+    if flyBodyGyro then flyBodyGyro:Destroy(); flyBodyGyro = nil end
+end
+
+COMMON BUGS TO NEVER MAKE:
+1. NEVER use Mouse.Target for aimbot - it is read-only. Always use Camera.CFrame instead.
+2. NEVER manipulate RootPart.CFrame directly for fly - use BodyVelocity + BodyGyro.
+3. NEVER use wait() - always use task.wait().
+4. NEVER declare variables after the functions that use them - always declare ALL variables at the top of the script.
+5. NEVER use inconsistent variable casing (flyConnection vs FlyConnection) - pick one and stick to it.
+6. ALWAYS put Tab:CreateSection() ABOVE the toggles/buttons that belong to that section.
+7. ALWAYS use task.wait() in loops, never wait().
+8. For infinite loops (aimbot, kill aura, etc.) use coroutine.wrap(function() ... end)() so they don't block.
+9. ALWAYS check if a connection exists before disconnecting it.
+10. NEVER set Humanoid properties directly without checking if Character and Humanoid exist first.
 
 TOOLS (put on own line):
 [SEARCH: query] - web search
