@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ghost AI - Memory</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #000;
+    color: #00ffff;
+    font-family: 'Courier New', Courier, monospace;
+    min-height: 100vh;
+  }
+  #header {
+    padding: 12px 20px;
+    border-bottom: 1px solid #00ffff33;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  #header h1 { font-size: 1rem; letter-spacing: 4px; text-transform: uppercase; }
+  #header-links a {
+    color: #00ffff88;
+    text-decoration: none;
+    font-size: 0.75rem;
+    margin-left: 16px;
+    letter-spacing: 1px;
+  }
+  #header-links a:hover { color: #00ffff; }
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid #00ffff33;
+    padding: 0 20px;
+  }
+  .tab {
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #00ffff44;
+    border-bottom: 2px solid transparent;
+  }
+  .tab.active { color: #00ffff; border-bottom: 2px solid #00ffff; }
+  .tab:hover { color: #00ffff88; }
+  .tab-content { display: none; padding: 24px 20px; }
+  .tab-content.active { display: block; }
+  .section-title {
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #00ffff88;
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #00ffff22;
+  }
+  .info-grid {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 8px 16px;
+    font-size: 0.85rem;
+    margin-bottom: 24px;
+  }
+  .info-label { color: #00ffff66; }
+  .info-value { color: #aaffff; }
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .history-item {
+    border-left: 2px solid #00ffff33;
+    padding: 8px 12px;
+    font-size: 0.82rem;
+    color: #aaffff;
+    line-height: 1.5;
+  }
+  .history-item .date {
+    color: #00ffff88;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  #raw-editor {
+    width: 100%;
+    min-height: 400px;
+    background: #000;
+    border: 1px solid #00ffff33;
+    color: #aaffff;
+    font-family: inherit;
+    font-size: 0.82rem;
+    padding: 16px;
+    outline: none;
+    resize: vertical;
+    line-height: 1.6;
+  }
+  #raw-editor:focus { border-color: #00ffff; }
+  .btn {
+    background: transparent;
+    border: 1px solid #00ffff;
+    color: #00ffff;
+    font-family: inherit;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 8px 20px;
+    cursor: pointer;
+    margin-top: 12px;
+  }
+  .btn:hover { background: #00ffff; color: #000; }
+  .btn.danger { border-color: #ff4444; color: #ff4444; }
+  .btn.danger:hover { background: #ff4444; color: #000; }
+  .status-msg {
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    margin-top: 8px;
+    color: #00ffff88;
+    min-height: 20px;
+  }
+  .tag {
+    display: inline-block;
+    border: 1px solid #00ffff33;
+    color: #00ffff88;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    margin: 2px;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+<div id="header">
+  <h1>GHOST / MEMORY</h1>
+  <div id="header-links">
+    <a href="/">chat</a>
+    <a href="/logout">logout</a>
+  </div>
+</div>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('overview')">Overview</div>
+  <div class="tab" onclick="switchTab('history')">History</div>
+  <div class="tab" onclick="switchTab('raw')">Raw JSON</div>
+</div>
+
+<div id="tab-overview" class="tab-content active">
+  <div class="section-title">User Info</div>
+  <div class="info-grid" id="user-info">
+    <div class="info-label">Loading...</div><div class="info-value"></div>
+  </div>
+  <div class="section-title">Preferences</div>
+  <div id="prefs-info" style="font-size:0.85rem;color:#aaffff;margin-bottom:24px;line-height:1.8;"></div>
+  <div class="section-title">Projects</div>
+  <div id="projects-info" style="font-size:0.85rem;color:#aaffff;line-height:1.8;"></div>
+</div>
+
+<div id="tab-history" class="tab-content">
+  <div class="section-title">Conversation History</div>
+  <div class="history-list" id="history-list">
+    <div style="color:#00ffff44;font-size:0.8rem;">Loading...</div>
+  </div>
+</div>
+
+<div id="tab-raw" class="tab-content">
+  <div class="section-title">Raw Memory JSON</div>
+  <textarea id="raw-editor"></textarea>
+  <div>
+    <button class="btn" onclick="saveRaw()">Save</button>
+    <button class="btn danger" onclick="clearHistory()">Clear History</button>
+  </div>
+  <div class="status-msg" id="status-msg"></div>
+</div>
+
+<script>
+let memoryData = {};
+
+async function loadMemory() {
+  try {
+    const res = await fetch("/memory/read");
+    memoryData = await res.json();
+    renderOverview();
+    renderHistory();
+    document.getElementById("raw-editor").value = JSON.stringify(memoryData, null, 2);
+  } catch(e) {
+    document.getElementById("status-msg").textContent = "Failed to load memory.";
+  }
+}
+
+function renderOverview() {
+  const grid = document.getElementById("user-info");
+  grid.innerHTML = "";
+  const fields = [
+    ["User", memoryData.user || "-"],
+    ["Email", memoryData.home_email || "-"],
+    ["Last Updated", memoryData.last_updated || "-"],
+    ["Plan", memoryData.plan || "-"],
+    ["Admin", memoryData.admin ? "yes" : "no"]
+  ];
+  fields.forEach(([label, value]) => {
+    grid.innerHTML += `<div class="info-label">${label}</div><div class="info-value">${value}</div>`;
+  });
+
+  const prefs = memoryData.preferences || {};
+  const prefsEl = document.getElementById("prefs-info");
+  prefsEl.innerHTML = `
+    <div><span style="color:#00ffff66;">UI Library:</span> ${prefs.ui_library || "-"}</div>
+    <div><span style="color:#00ffff66;">No Emojis:</span> ${prefs.no_emojis ? "yes" : "no"}</div>
+    <div><span style="color:#00ffff66;">Executors:</span> ${(prefs.executors || []).map(e => `<span class="tag">${e}</span>`).join(" ")}</div>
+  `;
+
+  const projects = memoryData.projects || {};
+  const projEl = document.getElementById("projects-info");
+  projEl.innerHTML = Object.keys(projects).map(key => {
+    const p = projects[key];
+    return `<div style="margin-bottom:12px;border-left:2px solid #00ffff33;padding-left:10px;">
+      <div style="color:#00ffff;letter-spacing:2px;text-transform:uppercase;font-size:0.8rem;">${key}</div>
+      <div style="color:#00ffff66;font-size:0.75rem;">status: ${p.status || "-"}</div>
+      ${p.url ? `<div style="color:#aaffff;font-size:0.75rem;">url: <a href="${p.url}" style="color:#00ffff88;" target="_blank">${p.url}</a></div>` : ""}
+    </div>`;
+  }).join("");
+}
+
+function renderHistory() {
+  const list = document.getElementById("history-list");
+  const history = memoryData.conversation_history || [];
+  if (history.length === 0) {
+    list.innerHTML = "<div style="color:#00ffff44;font-size:0.8rem;">No history found.</div>";
+    return;
+  }
+  list.innerHTML = history.map(entry => {
+    const colonIdx = entry.indexOf(":");
+    const date = colonIdx > -1 ? entry.slice(0, colonIdx) : "";
+    const text = colonIdx > -1 ? entry.slice(colonIdx + 1).trim() : entry;
+    return `<div class="history-item"><div class="date">${date}</div>${text}</div>`;
+  }).join("");
+}
+
+async function saveRaw() {
+  const statusEl = document.getElementById("status-msg");
+  try {
+    const data = JSON.parse(document.getElementById("raw-editor").value);
+    const res = await fetch("/memory/write", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(data)
+    });
+    const result = await res.json();
+    statusEl.textContent = result.success ? "Saved." : "Save failed.";
+    memoryData = data;
+    renderOverview();
+    renderHistory();
+  } catch(e) {
+    statusEl.textContent = "Invalid JSON: " + e.message;
+  }
+}
+
+async function clearHistory() {
+  if (!confirm("Clear all conversation history?")) return;
+  memoryData.conversation_history = [];
+  document.getElementById("raw-editor").value = JSON.stringify(memoryData, null, 2);
+  await saveRaw();
+}
+
+function switchTab(name) {
+  document.querySelectorAll(".tab").forEach((t, i) => {
+    const names = ["overview", "history", "raw"];
+    t.classList.toggle("active", names[i] === name);
+  });
+  document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+  document.getElementById("tab-" + name).classList.add("active");
+}
+
+loadMemory();
+</script>
+</body>
+</html>
