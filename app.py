@@ -10,7 +10,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "ghost-secret")
 APP_PASSWORD = os.environ.get("APP_PASSWORD", "iloveubatcat")
 CHAT_HISTORY_BIN_ID = "6aa318f2ffd5d16053f7c8f5"
-GROQ_MODEL = "llama-3.3-70b-versatile"
+GROQ_MODEL = "openai/gpt-oss-20b"
 
 def get_jsonbin_headers():
     return {
