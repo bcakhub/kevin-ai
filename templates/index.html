@@ -2,47 +2,269 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Ghost AI</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #000; color: #00ffff; font-family: 'Courier New', Courier, monospace; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-  #header { padding: 12px 20px; border-bottom: 1px solid #00ffff33; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-  #header h1 { font-size: 1.2rem; color: #00ffff; letter-spacing: 4px; text-transform: uppercase; }
-  #header h1 span { display: inline-block; width: 10px; height: 1.2rem; background: #00ffff; margin-left: 4px; animation: blink 1s step-end infinite; vertical-align: middle; }
+
+  body {
+    background: #000;
+    color: #00ffff;
+    font-family: 'Courier New', Courier, monospace;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* HEADER */
+  #header {
+    padding: 10px 16px;
+    border-bottom: 1px solid #00ffff33;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    min-height: 48px;
+  }
+  #header h1 {
+    font-size: 1.1rem;
+    color: #00ffff;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  #header h1 span {
+    display: inline-block;
+    width: 10px;
+    height: 1.1rem;
+    background: #00ffff;
+    margin-left: 4px;
+    animation: blink 1s step-end infinite;
+    vertical-align: middle;
+  }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-  #header-links a { color: #00ffff88; text-decoration: none; font-size: 0.75rem; margin-left: 16px; letter-spacing: 1px; }
+  #header-links { display: flex; gap: 12px; flex-shrink: 0; }
+  #header-links a {
+    color: #00ffff88;
+    text-decoration: none;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    padding: 4px 6px;
+    white-space: nowrap;
+  }
   #header-links a:hover { color: #00ffff; }
-  #chat-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+
+  /* CHAT AREA */
+  #chat-container {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    -webkit-overflow-scrolling: touch;
+  }
   #chat-container::-webkit-scrollbar { width: 4px; }
   #chat-container::-webkit-scrollbar-thumb { background: #00ffff44; border-radius: 2px; }
-  .message { max-width: 85%; line-height: 1.6; font-size: 0.9rem; word-break: break-word; }
-  .message.user { align-self: flex-end; color: #00ffff; border-left: 2px solid #00ffff; padding-left: 10px; white-space: pre-wrap; }
-  .message.assistant { align-self: flex-start; color: #aaffff; border-left: 2px solid #00ffff44; padding-left: 10px; }
-  .message.system-msg { align-self: center; color: #00ffff44; font-size: 0.75rem; letter-spacing: 2px; }
-  .tool-indicator { align-self: flex-start; color: #00ffff66; font-size: 0.75rem; letter-spacing: 2px; padding-left: 12px; border-left: 2px solid #00ffff22; animation: pulse 1.2s ease-in-out infinite; }
+
+  /* MESSAGES */
+  .message {
+    max-width: 88%;
+    line-height: 1.6;
+    font-size: 0.88rem;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+  .message.user {
+    align-self: flex-end;
+    color: #00ffff;
+    border-left: 2px solid #00ffff;
+    padding-left: 10px;
+    white-space: pre-wrap;
+  }
+  .message.assistant {
+    align-self: flex-start;
+    color: #aaffff;
+    border-left: 2px solid #00ffff44;
+    padding-left: 10px;
+  }
+  .message.system-msg {
+    align-self: center;
+    color: #00ffff44;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+  }
+
+  /* TOOL INDICATOR */
+  .tool-indicator {
+    align-self: flex-start;
+    color: #00ffff66;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    padding-left: 12px;
+    border-left: 2px solid #00ffff22;
+    animation: pulse 1.2s ease-in-out infinite;
+  }
   @keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
-  .code-block-wrapper { position: relative; margin: 8px 0; border: 1px solid #00ffff33; border-radius: 4px; overflow: hidden; }
-  .lang-label { background: #00ffff11; color: #00ffff88; font-size: 0.7rem; padding: 3px 10px; letter-spacing: 2px; text-transform: uppercase; }
-  .copy-btn { position: absolute; top: 4px; right: 8px; background: transparent; border: 1px solid #00ffff44; color: #00ffff88; font-size: 0.7rem; padding: 2px 8px; cursor: pointer; font-family: inherit; letter-spacing: 1px; }
-  .copy-btn:hover { color: #00ffff; border-color: #00ffff; }
-  .code-block-wrapper pre { margin: 0; }
-  .code-block-wrapper code { font-size: 0.82rem; }
-  #input-area { border-top: 1px solid #00ffff33; padding: 12px 20px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; background: #000; }
-  #prompt-symbol { color: #00ffff; font-size: 1rem; flex-shrink: 0; }
-  #message-input { flex: 1; background: transparent; border: none; outline: none; color: #00ffff; font-family: inherit; font-size: 0.9rem; resize: none; height: 36px; max-height: 120px; overflow-y: auto; }
+
+  /* CODE BLOCKS */
+  .code-block-wrapper {
+    position: relative;
+    margin: 8px 0;
+    border: 1px solid #00ffff33;
+    border-radius: 4px;
+    overflow: hidden;
+    max-width: 100%;
+  }
+  .lang-label {
+    background: #00ffff11;
+    color: #00ffff88;
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .copy-btn {
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    background: transparent;
+    border: 1px solid #00ffff44;
+    color: #00ffff88;
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 1px;
+    touch-action: manipulation;
+    min-height: 28px;
+  }
+  .copy-btn:hover, .copy-btn:active { color: #00ffff; border-color: #00ffff; }
+  .code-block-wrapper pre {
+    margin: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .code-block-wrapper code { font-size: 0.8rem; white-space: pre; }
+
+  /* FILE INDICATOR */
+  #file-indicator {
+    color: #00ffff66;
+    font-size: 0.75rem;
+    padding: 4px 16px;
+    display: none;
+    flex-shrink: 0;
+  }
+
+  /* INPUT AREA */
+  #input-area {
+    border-top: 1px solid #00ffff33;
+    padding: 10px 12px;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+    background: #000;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+  #prompt-symbol {
+    color: #00ffff;
+    font-size: 1rem;
+    flex-shrink: 0;
+    padding-bottom: 6px;
+  }
+  #message-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #00ffff;
+    font-family: inherit;
+    font-size: 0.9rem;
+    resize: none;
+    height: 36px;
+    max-height: 120px;
+    overflow-y: auto;
+    -webkit-appearance: none;
+    line-height: 1.5;
+  }
   #message-input::placeholder { color: #00ffff44; }
-  #file-btn { background: transparent; border: 1px solid #00ffff33; color: #00ffff88; padding: 4px 10px; cursor: pointer; font-family: inherit; font-size: 0.75rem; letter-spacing: 1px; }
-  #file-btn:hover { border-color: #00ffff; color: #00ffff; }
-  #send-btn { background: transparent; border: 1px solid #00ffff; color: #00ffff; padding: 6px 16px; cursor: pointer; font-family: inherit; font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; }
-  #send-btn:hover { background: #00ffff; color: #000; }
+  #btn-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  #file-btn {
+    background: transparent;
+    border: 1px solid #00ffff33;
+    color: #00ffff88;
+    padding: 0;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    touch-action: manipulation;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  #file-btn:hover, #file-btn:active { border-color: #00ffff; color: #00ffff; }
+  #send-btn {
+    background: transparent;
+    border: 1px solid #00ffff;
+    color: #00ffff;
+    padding: 0 14px;
+    height: 36px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.82rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    touch-action: manipulation;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  #send-btn:hover, #send-btn:active { background: #00ffff; color: #000; }
   #send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   #file-input { display: none; }
-  #file-indicator { color: #00ffff66; font-size: 0.75rem; padding: 0 20px 8px; display: none; }
-  img.ai-image { max-width: 300px; border: 1px solid #00ffff33; margin-top: 8px; display: block; }
-  @media (max-width: 600px) { .message { max-width: 98%; } #header h1 { font-size: 1rem; } }
+
+  /* IMAGES */
+  img.ai-image {
+    max-width: min(300px, 100%);
+    border: 1px solid #00ffff33;
+    margin-top: 8px;
+    display: block;
+  }
+
+  /* MOBILE OVERRIDES */
+  @media (max-width: 600px) {
+    body { height: 100dvh; }
+    #header { padding: 8px 12px; min-height: 44px; }
+    #header h1 { font-size: 0.95rem; letter-spacing: 2px; }
+    #header-links a { font-size: 0.7rem; padding: 4px 4px; }
+    #chat-container { padding: 12px 10px; gap: 12px; }
+    .message { max-width: 96%; font-size: 0.85rem; }
+    #input-area { padding: 8px 10px; padding-bottom: max(8px, env(safe-area-inset-bottom)); gap: 6px; }
+    #message-input { font-size: 16px; /* prevents iOS zoom on focus */ }
+    #send-btn { padding: 0 12px; font-size: 0.78rem; letter-spacing: 1px; }
+    .code-block-wrapper code { font-size: 0.75rem; }
+    .copy-btn { font-size: 0.65rem; padding: 2px 8px; }
+  }
+
+  @media (max-width: 380px) {
+    #header h1 { font-size: 0.85rem; letter-spacing: 1px; }
+    #header-links a { font-size: 0.65rem; }
+    #file-btn { width: 32px; height: 32px; font-size: 0.7rem; }
+    #send-btn { height: 32px; padding: 0 10px; }
+  }
 </style>
 </head>
 <body>
@@ -53,16 +275,16 @@
     <a href="/logout">logout</a>
   </div>
 </div>
-<div id="chat-container">
-  <div class="message system-msg">GHOST ONLINE -- READY</div>
-</div>
+<div id="chat-container"></div>
 <div id="file-indicator"></div>
 <div id="input-area">
   <span id="prompt-symbol">&gt;</span>
   <textarea id="message-input" placeholder="type a message..." rows="1"></textarea>
-  <button id="file-btn" onclick="document.getElementById('file-input').click()">attach</button>
-  <input type="file" id="file-input" accept=".lua,.py,.js,.html,.txt,.json">
-  <button id="send-btn">send</button>
+  <div id="btn-group">
+    <button id="file-btn" title="Attach file" onclick="document.getElementById('file-input').click()">+</button>
+    <input type="file" id="file-input" accept=".lua,.py,.js,.html,.txt,.json">
+    <button id="send-btn">send</button>
+  </div>
 </div>
 <audio id="notify-sound" src="https://www.soundjay.com/buttons/sounds/button-09.mp3" preload="auto"></audio>
 <script>
@@ -82,10 +304,17 @@ var TOOL_LABELS = {
 };
 
 // Load history on page load
-window.onload = function() {
+window.addEventListener("load", function() {
   fetch("/history")
     .then(function(r) { return r.json(); })
     .then(function(history) {
+      // Clear container first
+      chatContainer.innerHTML = "";
+      if (!history || history.length === 0) {
+        addSystemMsg("GHOST ONLINE -- READY");
+        return;
+      }
+      // Render each message
       for (var i = 0; i < history.length; i++) {
         var msg = history[i];
         if (msg.role === "user" || msg.role === "assistant") {
@@ -94,8 +323,19 @@ window.onload = function() {
       }
       scrollToBottom();
     })
-    .catch(function() {});
-};
+    .catch(function() {
+      chatContainer.innerHTML = "";
+      addSystemMsg("GHOST ONLINE -- READY");
+    });
+});
+
+function addSystemMsg(text) {
+  var div = document.createElement("div");
+  div.className = "message system-msg";
+  div.textContent = text;
+  chatContainer.appendChild(div);
+  scrollToBottom();
+}
 
 fileInput.onchange = function() {
   if (fileInput.files.length > 0) {
@@ -105,21 +345,21 @@ fileInput.onchange = function() {
   }
 };
 
-input.onkeydown = function(e) {
+input.addEventListener("keydown", function(e) {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
     sendMessage();
   }
-};
+});
 
-input.oninput = function() {
+input.addEventListener("input", function() {
   input.style.height = "36px";
   input.style.height = Math.min(input.scrollHeight, 120) + "px";
-};
+});
 
-sendBtn.onclick = function() {
+sendBtn.addEventListener("click", function() {
   sendMessage();
-};
+});
 
 function scrollToBottom() {
   chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -134,7 +374,6 @@ function escapeHtml(text) {
 
 function formatMessage(text) {
   var result = "";
-  var remaining = text;
   var codeRegex = /```(\w+)?\n?([\s\S]*?)```/g;
   var lastIndex = 0;
   var match;
@@ -171,6 +410,14 @@ function copyCode(btn) {
   navigator.clipboard.writeText(code).then(function() {
     btn.textContent = "copied";
     setTimeout(function() { btn.textContent = "copy"; }, 2000);
+  }).catch(function() {
+    // Fallback for older mobile browsers
+    var ta = document.createElement("textarea");
+    ta.value = code;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); btn.textContent = "copied"; setTimeout(function(){ btn.textContent = "copy"; }, 2000); } catch(e) {}
+    document.body.removeChild(ta);
   });
 }
 
@@ -248,6 +495,10 @@ function sendMessage() {
           if (result.done) {
             removeThinking();
             removeToolIndicator();
+            // Clean up empty assistant bubble if nothing came through
+            if (!fullText.trim()) {
+              msgDiv.parentNode && msgDiv.parentNode.removeChild(msgDiv);
+            }
             sendBtn.disabled = false;
             input.focus();
             return;
@@ -290,7 +541,7 @@ function sendMessage() {
         }).catch(function(e) {
           removeThinking();
           removeToolIndicator();
-          msgDiv.innerHTML = "Error: " + e.message;
+          if (msgDiv.parentNode) msgDiv.innerHTML = "Connection error: " + e.message;
           sendBtn.disabled = false;
           input.focus();
         });
@@ -301,7 +552,7 @@ function sendMessage() {
     .catch(function(e) {
       removeThinking();
       removeToolIndicator();
-      msgDiv.innerHTML = "Error: " + e.message;
+      if (msgDiv.parentNode) msgDiv.innerHTML = "Connection error: " + e.message;
       sendBtn.disabled = false;
       input.focus();
     });
